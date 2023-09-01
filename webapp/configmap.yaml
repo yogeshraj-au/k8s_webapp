@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-cm
+  labels:
+    app: webapp
+data:
+  db_addr: "db-mysql.webapp.svc.cluster.local" #Assuming mysql is deployed in db namespace
+  db_port: "3306"
