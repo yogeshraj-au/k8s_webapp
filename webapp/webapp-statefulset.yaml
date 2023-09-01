@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: webapp-statefulset
+spec:
+  serviceName: webapp-svc
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+        - name: webapp
+          image: webapp
+          ports:
+            - name: http 
+              containerPort: 9000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          env:
+            - name: DB_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: db-cm
+                  key: db_addr
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-cm
+                  key: db_port
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: db_username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: db_password
+          volumeMounts:
+          - name: webapp-data
+            mountPath: /data
+          resources:
+            limits:
+              cpu: "2.5"
+              memory: "4Gi"
+  volumeClaimTemplates:
+    - metadata:
+        name: webapp-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: webapp-storage
+        resources:
+          requests:
+            storage: 10Gi

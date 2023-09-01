@@ -1,0 +1,20 @@
+#Assuming the nginx ingress contoller and external dns is deployed and configured in the cluster.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: challenge-app.navvis.com
+    http:
+      paths:
+        - path: /primary
+          pathType: Prefix
+          backend:
+            service:
+              name: webapp-primary-svc
+              port: 
+                number: 9000
